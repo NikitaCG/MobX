@@ -1,0 +1,27 @@
+parser: babel-eslint
+plugins:
+  - import
+  - react
+  - jsx-a11y
+rules:
+  max-len:
+    - 1
+    - 140
+    - 2
+    - ignoreComments: true
+  prop-types:
+    - 2
+  indent:
+    - 2
+    - tab
+  no-tabs: 0
+  no-mixed-spaces-and-tabs:
+    - 0
+    - false
+extends:
+  - airbnb-base
+  - plugin:react/recommended
+env:
+  node: true
+  browser: true
+  es6: true
