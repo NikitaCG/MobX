@@ -1,53 +1,77 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import DevTools from 'mobx-react-devtools';
-import { observable, action } from "mobx";
+import {observable, action, decorate, configure, runInAction} from "mobx";
 import { observer } from 'mobx-react';
 
-const nickName = observable({
-    firstName : 'nikita',
-    age: 23,
+configure({enforceActions: 'observed'});
 
-    get nickName() {
-        console.log('work');
-        return `${this.firstName}${this.age}`;
-    },
+// const nickName = observable({
+//     firstName : 'nikita',
+//     age: 23,
+//
+//     get nickName() {
+//         console.log('work');
+//         return `${this.firstName}${this.age}`;
+//     },
+//
+//     increment() { this.age++ },
+//
+//     decrement() { this.age-- },
+// },{
+//     increment: action('plus'),
+//     decrement: action('minus')
+// },{
+//     name:'observableObject'
+// });
+//
+// const todos = observable([
+//     { text: 'Learn React'},
+//     { text: 'Learn MobX'}
+// ]);
 
-    increment() { this.age++ },
+class Store  {
+    user = null;
 
-    decrement() { this.age-- },
-},{
-    increment: action('plus'),
-    decrement: action('minus')
-},{
-    name:'observableObject'
+    getUser() {
+        fetch('https://randomuser.me/api/')
+            .then(res => res.json())
+            .then(json => {
+                if (json.results) {
+                    runInAction( () => { this.user = json.results[0]; });
+                    //или
+                    // this.setUser(json.results);
+                }
+            })
+    }
+
+    // setUser(results) {
+    //     this.user = results[0];
+    // }
+}
+
+decorate(Store, {
+    user: observable,
+    getUser: action.bound,
+    // setUser: action
 });
 
-const todos = observable([
-    { text: 'Learn React'},
-    { text: 'Learn MobX'}
-]);
+const appStore = new Store();
 
 
-@observer class Counter extends React.Component {
-
-    handleIncrement = () => { this.props.store.increment() };
-    handleDecrement = () => { this.props.store.decrement() };
+@observer class App extends React.Component {
 
     render() {
+        const { store } = this.props;
+
         return (
             <div>
                 <DevTools />
-                <h1>{this.props.store.nickName}</h1>
-                <h1>{this.props.store.age}</h1>
-                <button onClick={this.handleDecrement}>-1</button>
-                <button onClick={this.handleIncrement}>+1</button>
-                <ul>
-                    {todos.map(({ text }) => <li key={text}>{text}</li>)}
-                </ul>
+                <button onClick={store.getUser}>Get User</button>
+                <h1>{store.user ? store.user.login.username : 'Default name'}</h1>
             </div>
         );
     }
 }
 
-ReactDOM.render(<Counter store={nickName} />, document.getElementById('root'));
+ReactDOM.render(<App store={appStore} />, document.getElementById('root'));
